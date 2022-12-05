@@ -1,0 +1,27 @@
+receivers:
+  otlp: # see https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md
+    protocols:
+      grpc:
+
+exporters:
+  prometheus: # see https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
+    endpoint: "0.0.0.0:8889"
+    metric_expiration: 10m
+
+processors: # see https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#recommended-processors
+  memory_limiter:
+      check_interval: 1s
+      limit_mib: 100
+      spike_limit_percentage: 50
+  batch:
+
+extensions:
+  health_check: # see https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/healthcheckextension
+
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus]
